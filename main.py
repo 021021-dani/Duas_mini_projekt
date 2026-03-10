@@ -3,10 +3,6 @@ import os
 import numpy as np
 
 def main():
-    
-    print("\n===================================")
-    print("     KING DOMINO BOARD ANALYZER")
-    print("===================================\n")
 
     print("\n======= Loadin KD Images =====")
     
