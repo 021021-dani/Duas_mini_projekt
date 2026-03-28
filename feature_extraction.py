@@ -21,7 +21,7 @@ def extrac_hsv_histogram(tile):
     s_hist = cv.calcHist([hsv], [1], None, [5],  [0, 256])
     v_hist = cv.calcHist([hsv], [2], None, [5],  [0, 256])
 
-    # Normaliser så lysstryke ikke dominerer- alle værdier mellem 0 og 1
+    # Normaliser så lysstryke ikke dominerer (alle værdier mellem 0 og 1)
     
     h_hist = cv.normalize(h_hist, h_hist).flatten()
     s_hist = cv.normalize(s_hist, s_hist).flatten()
@@ -81,6 +81,7 @@ def process_all_tiles(tiles_root_folder, output_csv):
                 continue
 
             # Udtræk de 20 histogram-værdier fra tilen
+            
             features = extrac_hsv_histogram(tile)
             
             # Bygge en række til CSV, runder 4 decmimaler + label og filnav
@@ -89,16 +90,14 @@ def process_all_tiles(tiles_root_folder, output_csv):
             rows.append(row)
             
     # Skrives alle rækker til CSV-filen på en gang
-    # Newline == er nødvendige på Windows så der ikke kommer tomme linjer 
-    
     with open(output_csv, "w", newline="") as f: #  f variablen bruge  i stedet for at skrive hele filnavnet igen.
+      
         
-        # csv.writer(f) opretter et writer-objekt der ved hvordan man skriver til en CSV-fil,
         # det håndterer automatisk kommaer og anførselstegn korrekt.
         writer = csv.writer(f) 
 
         writer.writerow(header)  # Første linje = klonnenavne 
-        writer.writerows(rows)  # Alle efterfølgende linjer = data 
+        writer.writerows(rows)  # Alle efterfølgende rækker = data 
 
     print(f"\nFinished! {len(rows)} tiles save in: {output_csv}")
     
@@ -108,6 +107,7 @@ def draw_histogram(ax, hist, colors, title, labels):
     """Tegner ét histogram med markering af den højeste søjle"""
     
     # Tegn alle søjler
+    
     ax.bar(range(len(hist)), hist, color=colors, edgecolor='white', linewidth=0.5)
     ax.set_title(title)
     ax.set_xticks(range(len(hist)))
@@ -115,6 +115,7 @@ def draw_histogram(ax, hist, colors, title, labels):
     ax.set_ylabel("Normaliseret frekvens")
 
     # Find og marker den højeste søjle med fed kant og værdi
+    
     max_idx = np.argmax(hist)
     ax.bar(max_idx, hist[max_idx], color=colors[max_idx], edgecolor='black', linewidth=1.5)
     ax.text(max_idx, hist[max_idx] + 0.02, f'{hist[max_idx]:.2f}',
@@ -124,55 +125,51 @@ def draw_histogram(ax, hist, colors, title, labels):
 def visualize_tile_and_histogram(tile_path):
     """
     Viser tile-billedet og dets HSV-histogram side om side
-    så man kan se sammenhængen mellem billede og tal.
+    for at se sammenhængen mellem billede og Histogram.
     """
 
     # Indlæs billedet fra stien
-    tile = cv.imread(tile_path)
-
-    # Stop hvis billedet ikke kunne læses
+    
+    tile = cv.imread(tile_path)    
     if tile is None:
         print("Can not read:", tile_path)
         return
-
-    # Konverter fra BGR til HSV for farveanalyse
+    
     hsv = cv.cvtColor(tile, cv.COLOR_BGR2HSV)
 
-    # Konverter til RGB så matplotlib kan vise billedet korrekt
     tile_rgb = cv.cvtColor(tile, cv.COLOR_BGR2RGB)
 
-    # Beregn og normaliser histogrammerne så værdier ligger mellem 0 og 1
+    # Beregn og normaliser histogrammerne
+
     h_hist = cv.normalize(cv.calcHist([hsv], [0], None, [10], [0, 180]), None).flatten()
     s_hist = cv.normalize(cv.calcHist([hsv], [1], None, [5],  [0, 256]), None).flatten()
     v_hist = cv.normalize(cv.calcHist([hsv], [2], None, [5],  [0, 256]), None).flatten()
 
-    # Farver til søjlerne - følger farvehjulet fra rød til pink
     hue_colors = ['#FF4444','#FF8800','#AACC00','#44BB00','#00AA88',
                   '#0088FF','#4444FF','#8800FF','#CC0088','#FF4444']
-
-    # Farver til saturation - fra grå til stærk blå
     sat_colors = ['#BBBBBB','#8899BB','#4477BB','#1144AA','#001188']
-
-    # Farver til value - fra sort til hvid
     val_colors = ['#111111','#555555','#999999','#CCCCCC','#FFFFFF']
 
     # Labels til x-akserne
+    
     hue_labels = ['rød','org','gul\ngrøn','grøn','cyan','blå','mørk\nblå','lilla','pink','rød']
     sat_labels = ['grå\nmat','lav','middel','høj','stærk\nfarve']
     val_labels = ['meget\nmørk','mørk','middel','lys','meget\nlys']
 
-    # Lav et vindue med 4 plots side om side - billede + 3 histogrammer
+    # Lav et vindue med 4 plots side om side 1 tile-billede + 3 histogrammer
     fig, axes = plt.subplots(1, 4, figsize=(16, 4))
 
     # Sæt filnavnet som titel øverst på vinduet
     fig.suptitle(os.path.basename(tile_path), fontsize=13)
 
-    # Vis selve tile-billedet i første plot
+    # Vis selve tile-billedet som første plot
+    
     axes[0].imshow(tile_rgb)
     axes[0].set_title("Tile")
     axes[0].axis('off')
 
     # Tegn de tre histogrammer med hjælpefunktionen
+    
     draw_histogram(axes[1], h_hist, hue_colors, "Hue (farvetone)",    hue_labels)
     draw_histogram(axes[2], s_hist, sat_colors, "Saturation (mætning)", sat_labels)
     draw_histogram(axes[3], v_hist, val_colors, "Value (lysstyrke)",  val_labels)
