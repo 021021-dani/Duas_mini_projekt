@@ -6,7 +6,7 @@ from feature_extraction import extrac_hsv_histogram, process_all_tiles, visualiz
 
 def main():
     
-    dataset_folder = r"/Users/mamali/Desktop/Ai_aau/Projekter/Duas_mini_projekt/KingDominoData"
+    dataset_folder = r"C:\Duas_mini_projekt\KD_tiles"
     
     print("\n====== Searching for images =======")
     
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     # Vis histogram for nogle udvalgte tiles
     
-    visualize_tile_and_histogram("KD_tiles/board_1/tile_0_0.jpg")
-    visualize_tile_and_histogram("KD_tiles/board_13/tile_3_1.jpg")
-    visualize_tile_and_histogram("KD_tiles/board_22/tile_2_3.jpg")
-    visualize_tile_and_histogram("KD_tiles/board_40/tile_3_1.jpg")
+    # visualize_tile_and_histogram("KD_tiles/board_1/tile_0_0.jpg")
+    # visualize_tile_and_histogram("KD_tiles/board_13/tile_3_1.jpg")
+    # visualize_tile_and_histogram("KD_tiles/board_22/tile_2_3.jpg")
+    # visualize_tile_and_histogram("KD_tiles/board_40/tile_3_1.jpg")

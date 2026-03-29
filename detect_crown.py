@@ -1,11 +1,14 @@
 """
-Module: crown_detec.py
+Module: detect_crown.py
 Responsibility: Extract crown multiplier counts from a cell.
 """
+
 import numpy as np
+
 
 class CrownDetector:
     """Detects and counts crowns within a cell."""
+
     def detect(self, cell_image: np.ndarray, terrain: str) -> int:
         """
         TODO:
