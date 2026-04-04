@@ -2,7 +2,7 @@
 Modul: Terrænklassificering ved hjælp af HSV-histogrammer og scikit-learns KNN.
 """
 
-import csv
+import pandas as pd
 from pathlib import Path
 
 import numpy as np
@@ -30,37 +30,20 @@ class TileClassifier:
         Læser features.csv og træner scikit-learn KNN-modellen.
         """
 
-        # Afbryd hvis træningsdata ikke findes
+        # Afbryd hvis træningsdata(features.csv) ikke findes
         if not self.features_csv.exists():
             print(f"Warning: Training data {self.features_csv} not found.")
             return
 
-        training_data = []  # Samler alle features (X)
-        labels = []  # Samler alle labels (y)
-
-        # Åbn CSV-filen og læs data
-        with self.features_csv.open("r", encoding="utf-8") as f:
-            reader = csv.reader(f)
-            header = next(reader)  # Spring over header-rækken (kolonnenavne)
-
-            # Gennemgå hver række i CSV-filen
-            for row in reader:
-                # Features er de første 20 værdier (indeks 0-19), label er på indeks 20
-                if len(row) >= 22 or (
-                    len(row) == 22 and "Unknown" not in row
-                ):  # Tilpas dette hvis CSV-formatet ændrer sig
-                    # Konverter de første 20 celler til et float-array
-                    features = np.array(row[:20], dtype=float)
-                    label = row[20]
-
-                    training_data.append(features)
-                    labels.append(label)
+        # Læs CSV-filen med pandas
+        df = pd.read_csv(self.features_csv)
+                
 
         # Træn kun modellen, hvis der rent faktisk er indlæst data
-        if training_data:
-            # Konverter listerne til numpy arrays for scikit-learn
-            X = np.array(training_data)
-            y = np.array(labels)
+        if not df.empty:
+            # Udtræk de første 20 kolonner (index 0-19) som X og 21. kolonne (index 20) som y
+            X = df.iloc[:, :20].values
+            y = df.iloc[:, 20].values
 
             # Træn scikit-learn KNN-modellen
             self.knn_model.fit(X, y)

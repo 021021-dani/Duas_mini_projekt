@@ -86,7 +86,7 @@ def process_all_tiles(tiles_root_folder, output_csv):
             
             # Bygge en række til CSV, runder 4 decmimaler + label og filnav
             
-            row = list(np.round(features, 4)) + ["Unknow", tile_file]
+            row = list(np.round(features, 4)) + ["Unknow", tile_file, board_name]
             rows.append(row)
             
     # Skrives alle rækker til CSV-filen på en gang

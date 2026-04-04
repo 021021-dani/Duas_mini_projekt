@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     # Vis histogram for nogle udvalgte tiles
     
-    # visualize_tile_and_histogram("KD_tiles/board_1/tile_0_0.jpg")
-    # visualize_tile_and_histogram("KD_tiles/board_13/tile_3_1.jpg")
+    visualize_tile_and_histogram("KD_tiles/board_53/tile_1_2.jpg")
+    visualize_tile_and_histogram("KD_tiles/board_49/tile_1_2.jpg")
     # visualize_tile_and_histogram("KD_tiles/board_22/tile_2_3.jpg")
     # visualize_tile_and_histogram("KD_tiles/board_40/tile_3_1.jpg")
