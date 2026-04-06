@@ -1,58 +1,163 @@
+﻿# -*- coding: utf-8 -*-
 """
-Modul: Kronedetektion ved hjælp af farvemaskering og konturgenkendelse.
+Modul: Kronedetektion ved hjælp af Template Matching.
+
+Dette modul er designet til at identificere og tælle kongekroner på KingDomino-tiles.
 """
+
+from pathlib import Path
 
 import cv2
 import numpy as np
 
+# Definer de spilleplader, der sorteres fra til test-sættet
+TEST_BOARDS = {
+    "board_1",
+    "board_5",
+    "board_19",
+    "board_23",
+    "board_25",
+    "board_29",
+    "board_35",
+    "board_39",
+    "board_49",
+    "board_53",
+    "board_67",
+    "board_70",
+}
+
 
 class CrownDetector:
-    """Detekterer og tæller antallet af kroner på en enkelt tile."""
+    """
+    Finder og tæller antallet af kroner på en tile, 
+    ved at trække templaten over pixlerne med sliding window.
+    """
 
-    def __init__(self, min_area=50, max_area=800):
-        # Definerer farveområdet for den gyldne krone i HSV-format
-        # (Disse værdier kan trimmes afhængigt af belysningen i datasættet)
-        self.lower_yellow = np.array([15, 100, 100], dtype=np.uint8)
-        self.upper_yellow = np.array([35, 255, 255], dtype=np.uint8)
+    def __init__(self, template_path="high_res_crown.png", threshold=0.88):
+        """
+        Args:
+            template_path (str): Den absolutte eller relative sti til .png skabelonen.
+            threshold (float): Tærskelværdi for accepterede overlap (mellem 0.0 og 1.0).
+                               Højere minimerer falsk positiver, lavere fanger flere.
+        """
+        self.threshold = threshold
+        self.template_path = template_path
 
-        # Arealgrænser for at filtrere støj og undgå falske positiver
-        self.min_area = min_area
-        self.max_area = max_area
+        # 1. Indlæs skabelonen (cv2.IMREAD_UNCHANGED beholder alfa-kanalen / gennemsigtighed)
+        template_img = cv2.imread(self.template_path, cv2.IMREAD_UNCHANGED)
+
+        if template_img is None:
+            raise FileNotFoundError(
+                f"Kunne ikke indlæse skabelonen: {self.template_path}"
+            )
+
+        self.template_gray = None
+        self.mask = None
+
+        # 2. Håndter PNG-billeder der indeholder gennemsigtighed (shape=[H, W, 4 kanaler])
+        if len(template_img.shape) == 3 and template_img.shape[2] == 4:
+            # Opdel i BGR (grafik) og Alfa (Gennemsigtighed)
+            bgr = template_img[:, :, :3]
+            alpha = template_img[:, :, 3]
+
+            # Konverter RGB grafikken til Gråtoneskal for "Template Matching"
+            self.template_gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+            # Alfa-kanalen fungerer som en pixel-maske
+            self.mask = alpha
+        else:
+            # Standard konvertering
+            self.template_gray = cv2.cvtColor(template_img, cv2.COLOR_BGR2GRAY)
+
+        # Gem template dimensioner til non-max-suppression funktionen
+        self.template_h, self.template_w = self.template_gray.shape[:2]
 
     def detect(self, cell_image: np.ndarray) -> int:
         """
-        Tæller antallet af gyldne kroner på et tile-billede.
-        Returnerer et heltal der repræsenterer antallet (typisk 0-3).
+        Tæller antallet af kroner vha. Normalized Cross Correlation.
+        Returnerer et heltal mellem 0 og 3.
         """
-
-        # Hvis billedet er tomt, returneres 0
         if cell_image is None or cell_image.size == 0:
             return 0
 
-        # Konverter billedet fra BGR (standard i OpenCV) til HSV for bedre farveseparation
-        hsv_image = cv2.cvtColor(cell_image, cv2.COLOR_BGR2HSV)
+        # Processér inputbrikken til Gråtone
+        gray_cell = cv2.cvtColor(cell_image, cv2.COLOR_BGR2GRAY)
 
-        # Opret en binær maske, der kun isolerer de gule/gyldne farver
-        mask = cv2.inRange(hsv_image, self.lower_yellow, self.upper_yellow)
+        # 3. Anvend Template Matching
+        # Hvis mask er tilgængelig, bruger vi cv2.TM_CCORR_NORMED
+        if self.mask is not None:
+            res = cv2.matchTemplate(
+                gray_cell, self.template_gray, cv2.TM_CCORR_NORMED, mask=self.mask
+            )
+        else:
+            res = cv2.matchTemplate(gray_cell, self.template_gray, cv2.TM_CCOEFF_NORMED)
 
-        # Rens masken med morfologiske operationer (fjerner støj)
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-        mask_cleaned = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        # 4. Find de Array-koordinater som overskrider threshold værdien
+        loc = np.where(res >= self.threshold)
+        points = list(zip(*loc[::-1]))
 
-        # Find konturer (sammenhængende gule områder) i den rensede maske
-        contours, _ = cv2.findContours(
-            mask_cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+        if not points:
+            return 0
 
-        crown_count = 0
+        # 5. Non-Maximum Suppression (Overlapping Bounding Boxes)
+        rectangles = []
+        for x, y in points:
+            rectangles.append(
+                [int(x), int(y), int(self.template_w), int(self.template_h)]
+            )
+            rectangles.append(
+                [int(x), int(y), int(self.template_w), int(self.template_h)]
+            )
 
-        # Gennemgå alle fundne konturer for at tælle de gyldige kroner
-        for contour in contours:
-            area = cv2.contourArea(contour)
+        rectangles, weights = cv2.groupRectangles(rectangles, groupThreshold=1, eps=0.2)
 
-            # Tæl kun konturen som en krone, hvis arealet er inden for de forventede grænser
-            if self.min_area <= area <= self.max_area:
-                crown_count += 1
+        crown_count = len(rectangles)
 
-        # I Kingdomino er der maksimalt 3 kroner på en brik
+        # Kingdomino har maksimalt 3 kroner per brik
         return min(crown_count, 3)
+
+
+if __name__ == "__main__":
+    # --- Akademisk Test af CrownDetector på Træning/Validering ---
+    print("?? Initialiserer Template Matching (vha. high_res_crown.png)...")
+    try:
+        detector = CrownDetector(template_path="high_res_crown.png", threshold=0.88)
+    except FileNotFoundError as e:
+        print(f"Fejl: {e}")
+        exit(1)
+
+    tiles_dir = Path("KD_tiles")
+    if not tiles_dir.exists():
+        print(f"\nMappe med tiles blev ikke fundet ved: {tiles_dir}")
+        exit(1)
+
+    processed_tiles = 0
+    total_crowns = 0
+
+    print("\n?? Analyserer spilleplader (Hård Ekskludering af TEST_BOARDS)...")
+
+    for board_folder in sorted(tiles_dir.iterdir()):
+        if not board_folder.is_dir():
+            continue
+
+        board_name = board_folder.name
+
+        # Forhinderer data leakage
+        if board_name in TEST_BOARDS:
+            continue
+
+        for tile_file in sorted(board_folder.glob("*.jpg")):
+            tile_img = cv2.imread(str(tile_file))
+
+            if tile_img is None:
+                continue
+
+            crowns_found = detector.detect(tile_img)
+
+            processed_tiles += 1
+            total_crowns += crowns_found
+
+    print(f"  - Antal Brikker (Tiles) Scannet: {processed_tiles}")
+    print(f"  - Estimeret Kongekroner Samlet : {total_crowns}")
+
+    # Kan være at vi skal prøve at finjustere threshold, 
+    # eller alternativt prøve med hybridløsninger + farvemaskering

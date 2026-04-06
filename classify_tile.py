@@ -2,13 +2,30 @@
 Modul: Terrænklassificering ved hjælp af HSV-histogrammer og scikit-learns KNN.
 """
 
-import pandas as pd
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
+from sklearn.model_selection import GridSearchCV, PredefinedSplit, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 
 from feature_extraction import extrac_hsv_histogram
+
+# Definer de spilleplader der sorteres fra til test-sættet
+TEST_BOARDS = {
+    "board_1",
+    "board_5",
+    "board_19",
+    "board_23",
+    "board_25",
+    "board_29",
+    "board_35",
+    "board_39",
+    "board_49",
+    "board_53",
+    "board_67",
+    "board_70",
+}
 
 
 class TileClassifier:
@@ -37,13 +54,18 @@ class TileClassifier:
 
         # Læs CSV-filen med pandas
         df = pd.read_csv(self.features_csv)
-                
 
         # Træn kun modellen, hvis der rent faktisk er indlæst data
         if not df.empty:
+            df = df.copy()
+
+            # Test-sættet udelades fra træning for at undgå "data leakage"
+            if "board_name" in df.columns:
+                df = df[~df["board_name"].isin(TEST_BOARDS)].copy()
+
             # Udtræk de første 20 kolonner (index 0-19) som X og 21. kolonne (index 20) som y
-            X = df.iloc[:, :20].values
-            y = df.iloc[:, 20].values
+            X = df.iloc[:, :20].to_numpy(dtype=float)
+            y = df.iloc[:, 20].to_numpy(dtype=str)
 
             # Træn scikit-learn KNN-modellen
             self.knn_model.fit(X, y)
@@ -70,3 +92,125 @@ class TileClassifier:
         prediction = self.knn_model.predict(features_2d)
 
         return prediction[0]
+
+
+if __name__ == "__main__":
+    # --- 1. Indlæs Dataset og opsæt K-Folds ---
+    csv_path = "features.csv"
+    print(f"\nBehandler data fra {csv_path}...")
+    df = pd.read_csv(csv_path)
+
+    # Opdel efter de 5 Fold-grupperinger
+    fold_mapping = {
+        # Fold 1
+        "board_4": 0,
+        "board_8": 0,
+        "board_20": 0,
+        "board_24": 0,
+        "board_34": 0,
+        "board_38": 0,
+        "board_42": 0,
+        "board_46": 0,
+        "board_48": 0,
+        "board_52": 0,
+        "board_65": 0,
+        "board_72": 0,
+        # Fold 2
+        "board_2": 1,
+        "board_6": 1,
+        "board_18": 1,
+        "board_22": 1,
+        "board_28": 1,
+        "board_32": 1,
+        "board_36": 1,
+        "board_40": 1,
+        "board_51": 1,
+        "board_55": 1,
+        "board_58": 1,
+        "board_62": 1,
+        # Fold 3
+        "board_10": 2,
+        "board_14": 2,
+        "board_11": 2,
+        "board_15": 2,
+        "board_26": 2,
+        "board_30": 2,
+        "board_41": 2,
+        "board_44": 2,
+        "board_57": 2,
+        "board_61": 2,
+        "board_64": 2,
+        "board_68": 2,
+        # Fold 4
+        "board_3": 3,
+        "board_7": 3,
+        "board_17": 3,
+        "board_21": 3,
+        "board_27": 3,
+        "board_31": 3,
+        "board_43": 3,
+        "board_47": 3,
+        "board_50": 3,
+        "board_54": 3,
+        "board_59": 3,
+        "board_63": 3,
+        # Fold 5
+        "board_9": 4,
+        "board_13": 4,
+        "board_12": 4,
+        "board_16": 4,
+        "board_33": 4,
+        "board_37": 4,
+        "board_45": 4,
+        "board_56": 4,
+        "board_60": 4,
+        "board_66": 4,
+        "board_69": 4,
+    }
+
+    # Fjern testsættet, så det medtages i CV/GridSearch
+    df = df[~df["board_name"].isin(TEST_BOARDS)].copy()
+
+    # Map fold-indices ud i CSV'en
+    df["fold"] = df["board_name"].map(fold_mapping)
+    df = df.dropna(subset=["fold"]).copy()
+
+    X_train_val = df.iloc[:, :20].to_numpy(dtype=float)
+    y_train_val = df["label"].to_numpy(dtype=str)
+    fold_indices = df["fold"].to_numpy(dtype=int)
+
+    print(f"Total tiles til CV hyper-tuning: {len(X_train_val)} over 5 Folds.")
+
+    # Scikit-learn tvinges til at bruge dine præcise 5 Folds!
+    ps = PredefinedSplit(test_fold=fold_indices)
+
+    # --- 2. Hyperparameter Tuning (Optimal k-værdi) via GridSearchCV ---
+    print("\nStarter parameter tuning (Optimal K-værdi for kNN)...")
+    knn = KNeighborsClassifier(metric="euclidean", weights="uniform")
+
+    # Vi tester ulige k-værdier op til 35
+    # (kun ulige for at undgå uafgjorte valg i kNN algoritmen)
+    param_grid = {"n_neighbors": np.arange(1, 36, 2)}
+
+    grid = GridSearchCV(knn, param_grid, cv=ps, scoring="accuracy", n_jobs=-1)
+    grid.fit(X_train_val, y_train_val)
+
+    best_k = grid.best_params_["n_neighbors"]
+    best_acc = grid.best_score_
+    print(
+        f"Bedste fundne k-værdi: k={best_k} med Validerings-accuracy på {(best_acc * 100):.2f}%\n"
+    )
+
+    # --- 3. Endelig Cross-Validation på den optimale k-værdi ---
+    print(
+        f"Kører en stringent 5-Fold Cross-Validation med model satt til k={best_k} ..."
+    )
+    cv_scores = cross_val_score(
+        grid.best_estimator_, X_train_val, y_train_val, cv=ps, scoring="accuracy"
+    )
+
+    for i, score in enumerate(cv_scores):
+        print(f"  > Fold {i + 1} Accuracy: {(score * 100):.2f}%")
+
+    print(f"\n  => Gennemsnitlig (Mean) CV Accuracy: {(np.mean(cv_scores) * 100):.2f}%")
+    print(f"  => Validations Spread (Std): {(np.std(cv_scores) * 100):.2f}%")
