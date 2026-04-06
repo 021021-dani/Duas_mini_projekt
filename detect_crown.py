@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-"""
+﻿"""
 Modul: Kronedetektion ved hjælp af Template Matching.
 
 Dette modul er designet til at identificere og tælle kongekroner på KingDomino-tiles.
