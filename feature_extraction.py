@@ -1,9 +1,20 @@
+<<<<<<< Updated upstream
+=======
+
+import cv2 as cv
+import numpy as np
+import os
+>>>>>>> Stashed changes
 import csv
 import os
 
 import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
+
+def board_number(name):
+    # Trækker tallet ud af mappenavnet fx board_10 → 10
+    return int(name.split("_")[1])
 
 
 def extrac_hsv_histogram(tile):
@@ -41,6 +52,7 @@ def process_all_tiles(
     udtrækker features og gemmer i en CSV-fil.
     """
 
+<<<<<<< Updated upstream
     # Indlæs ground truth labels
     ground_truth = {}
     if os.path.exists(ground_truth_csv):
@@ -97,6 +109,23 @@ def process_all_tiles(
 
     # Gå gennem alle board-mapper i den specifikke rækkefølge
     for board_name in ordered_boards:
+=======
+    # Klonner til CSV-filen (10 hue, 5 sat, 5 val)
+      
+    header = (
+    [f"hue_{i}" for i in range(10)] +
+    [f"sat_{i}" for i in range(5)]  +
+    [f"val_{i}" for i in range(5)]  +
+    ["label", "tile_file", "board"]   
+)
+    
+    rows = []  # Samler alle rækker inden de skrives til CSV 
+
+    # Gå gennem alle borad-mapper, sikrer med sorted  at de kommer i alfabetisk rækkefølge
+    
+    alle_mapper = [m for m in os.listdir(tiles_root_folder) if m.startswith("board_")]
+    for board_name in sorted(alle_mapper, key=board_number):
+>>>>>>> Stashed changes
         board_path = os.path.join(tiles_root_folder, board_name)
 
         # Spring over hvis det ikke er en mappe
@@ -124,6 +153,23 @@ def process_all_tiles(
                 continue
 
             # Udtræk de 20 histogram-værdier fra tilen
+<<<<<<< Updated upstream
+=======
+            
+            features = extrac_hsv_histogram(tile)
+            
+            # Bygge en række til CSV, runder 4 decmimaler + label og filnav
+            
+            row = list(np.round(features, 4)) + ["Unknown", tile_file, board_name]
+            rows.append(row)
+            
+    # Skrives alle rækker til CSV-filen på en gang
+    with open(output_csv, "w", newline="") as f: #  f variablen bruge  i stedet for at skrive hele filnavnet igen.
+      
+        
+        # det håndterer automatisk kommaer og anførselstegn korrekt.
+        writer = csv.writer(f) 
+>>>>>>> Stashed changes
 
             features = extrac_hsv_histogram(tile)
 

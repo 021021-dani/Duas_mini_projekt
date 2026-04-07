@@ -39,8 +39,9 @@ if __name__ == "__main__":
         tiles_root_folder="KD_tiles",
         output_csv="features.csv",
         ground_truth_csv="Labels_ground_truth.csv"
-    # Vis histogram for nogle udvalgte tiles
     
+    
+    # Vis histogram for nogle udvalgte tiles
     # visualize_tile_and_histogram("KD_tiles/board_53/tile_1_2.jpg")
     # visualize_tile_and_histogram("KD_tiles/board_49/tile_1_2.jpg")
     # visualize_tile_and_histogram("KD_tiles/board_22/tile_2_3.jpg")
