@@ -117,7 +117,7 @@ class CrownDetector:
 
 if __name__ == "__main__":
     # --- Akademisk Test af CrownDetector på Træning/Validering ---
-    print("?? Initialiserer Template Matching (vha. high_res_crown.png)...")
+    print("Initialiserer Template Matching (vha. high_res_crown.png)...")
     try:
         detector = CrownDetector(template_path="high_res_crown.png", threshold=0.88)
     except FileNotFoundError as e:
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     processed_tiles = 0
     total_crowns = 0
 
-    print("\n?? Analyserer spilleplader (Hård Ekskludering af TEST_BOARDS)...")
+    print("\nAnalyserer spilleplader (uden TEST_BOARDS)...")
 
     for board_folder in sorted(tiles_dir.iterdir()):
         if not board_folder.is_dir():

@@ -60,10 +60,15 @@ class TileClassifier:
             df = df.copy()
 
             # Test-sættet udelades fra træning for at undgå "data leakage"
+            # Filtrerer datasættet (df) og fjerner alle rækker, der tilhører vores foruddefinerede test-sæt (TEST_BOARDS).
+            # '~' tegnet fungerer som et logisk "NOT", så koden kun beholder de spilleplader, der ikke findes i test-sættet.
             if "board_name" in df.columns:
                 df = df[~df["board_name"].isin(TEST_BOARDS)].copy()
 
-            # Udtræk de første 20 kolonner (index 0-19) som X og 21. kolonne (index 20) som y
+            # Udtræk de første 20 kolonner (index 0-19) som X, hvilket er vores HSV-værdier og konverterer til kommatal.
+            # og 21. kolonne (index 20) som y
+            # Udtrækker input-data (features): Henter de første 20 kolonner (vores HSV-værdier) for alle rækker og konverterer til kommatal.
+            # Udtrækker facit (labels): Henter den 21. kolonne (terræn-navnet) for alle rækker og konverterer til tekststrenge.
             X = df.iloc[:, :20].to_numpy(dtype=float)
             y = df.iloc[:, 20].to_numpy(dtype=str)
 
