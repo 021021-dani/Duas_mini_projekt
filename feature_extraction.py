@@ -73,27 +73,13 @@ def process_all_tiles(
 
     rows = []  # Samler alle rækker inden de skrives til CSV
 
-    # Definerer den præcise rækkefølge for at sikre struktureret splits (K-fold) og undgå data leakage
+    # Find alle board mapper og sorter dem numerisk (1, 2, 3...)
     ordered_boards = [
-        # Fold 1
-        "board_4", "board_8", "board_20", "board_24", "board_34", "board_38", 
-        "board_42", "board_46", "board_48", "board_52", "board_65", "board_72",
-        # Fold 2
-        "board_2", "board_6", "board_18", "board_22", "board_28", "board_32", 
-        "board_36", "board_40", "board_51", "board_55", "board_58", "board_62",
-        # Fold 3
-        "board_10", "board_14", "board_11", "board_15", "board_26", "board_30", 
-        "board_41", "board_44", "board_57", "board_61", "board_64", "board_68",
-        # Fold 4
-        "board_3", "board_7", "board_17", "board_21", "board_27", "board_31", 
-        "board_43", "board_47", "board_50", "board_54", "board_59", "board_63",
-        # Fold 5
-        "board_9", "board_13", "board_12", "board_16", "board_33", "board_37", 
-        "board_45", "board_56", "board_60", "board_66", "board_69",
-        # Test-sæt (Hold-out)
-        "board_1", "board_5", "board_19", "board_23", "board_25", "board_29", 
-        "board_35", "board_39", "board_49", "board_53", "board_67", "board_70"
+        d
+        for d in os.listdir(tiles_root_folder)
+        if os.path.isdir(os.path.join(tiles_root_folder, d)) and d.startswith("board_")
     ]
+    ordered_boards.sort(key=lambda x: int(x.split("_")[1]))
 
     # Gå gennem alle board-mapper i den specifikke rækkefølge
     for board_name in ordered_boards:
