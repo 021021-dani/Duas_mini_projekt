@@ -3,6 +3,8 @@ import cv2 as cv
 import os
 from board_split import get_tiles
 from feature_extraction import extrac_hsv_histogram, process_all_tiles, visualize_tile_and_histogram
+from merge_labels import merge_features_with_labels
+from scoring import compute_scores_from_csv
 
 def main():
     
@@ -35,14 +37,33 @@ def main():
 if __name__ == "__main__":
     
     # Gem alle features i CSV inkl. ground truth labels
+    
     process_all_tiles(
         tiles_root_folder="KD_tiles",
         output_csv="features.csv",
         ground_truth_csv="Labels_ground_truth.csv"
+    )
+        
+        
     # Vis histogram for nogle udvalgte tiles
     
-    # visualize_tile_and_histogram("KD_tiles/board_53/tile_1_2.jpg")
-    # visualize_tile_and_histogram("KD_tiles/board_49/tile_1_2.jpg")
-    # visualize_tile_and_histogram("KD_tiles/board_22/tile_2_3.jpg")
-    # visualize_tile_and_histogram("KD_tiles/board_40/tile_3_1.jpg")
-    )
+    #visualize_tile_and_histogram("KD_tiles/board_53/tile_1_2.jpg")
+    #visualize_tile_and_histogram("KD_tiles/board_49/tile_1_2.jpg")
+    #visualize_tile_and_histogram("KD_tiles/board_22/tile_2_3.jpg")
+    #visualize_tile_and_histogram("KD_tiles/board_40/tile_3_1.jpg")
+    
+    # Scoring. py
+    
+    results = compute_score_from_csv("feature.scv")
+    
+    print("\n=== Board Scores ===")
+    
+    for board_name, score in results.items():
+        print(f"{borad_name}: {score}")
+        
+        
+    
+    
+
+    
+    

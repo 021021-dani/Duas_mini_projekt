@@ -100,6 +100,7 @@ class TileClassifier:
 
 
 if __name__ == "__main__":
+    
     # --- 1. Indlæs Dataset og opsæt K-Folds ---
     csv_path = "features.csv"
     print(f"\nBehandler data fra {csv_path}...")
