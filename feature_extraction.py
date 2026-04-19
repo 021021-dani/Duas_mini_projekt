@@ -7,15 +7,16 @@ import numpy as np
 
 
 def extrac_hsv_histogram(tile):
+   
     """
-    Udtræk farvehistogram fra en tile i HSV-farverum.
+    Udtræk farvehistogram fra en tile i HSV-farverum!
     Returnerer en numpy array med 20 værdier.
     """
 
     hsv = cv.cvtColor(tile, cv.COLOR_BGR2HSV)  # Konverter fra RGB til HSV
 
     # Beregn histogram for hver kanal ([0] = kanal, None = ingen maske,
-    # [10] = antal bins, [0,180] = værdiområde for HSV
+    # [10] = antal bins, [0,256] = værdiområde for HSV
 
     h_hist = cv.calcHist([hsv], [0], None, [10], [0, 180])
     s_hist = cv.calcHist([hsv], [1], None, [5], [0, 256])
@@ -42,15 +43,18 @@ def process_all_tiles(
     """
 
     # Indlæs ground truth labels
+    
     ground_truth = {}
     if os.path.exists(ground_truth_csv):
         with open(ground_truth_csv, "r", encoding="utf-8") as f:
             reader = csv.reader(f, delimiter=";")
             headers = next(reader)
+            
             # Find the header indices for each tile mapping
             for row in reader:
                 if not row or len(row) < 2:
                     continue
+                
                 board_name = row[0].strip()
                 ground_truth[board_name] = {}
                 for col_idx in range(1, len(headers)):
@@ -74,6 +78,7 @@ def process_all_tiles(
     rows = []  # Samler alle rækker inden de skrives til CSV
 
     # Find alle board mapper og sorter dem numerisk (1, 2, 3...)
+    
     ordered_boards = [
         d
         for d in os.listdir(tiles_root_folder)
@@ -82,6 +87,7 @@ def process_all_tiles(
     ordered_boards.sort(key=lambda x: int(x.split("_")[1]))
 
     # Gå gennem alle board-mapper i den specifikke rækkefølge
+    
     for board_name in ordered_boards:
         board_path = os.path.join(tiles_root_folder, board_name)
 
@@ -110,10 +116,10 @@ def process_all_tiles(
                 continue
 
             # Udtræk de 20 histogram-værdier fra tilen
-
             features = extrac_hsv_histogram(tile)
 
             # Find det rigtige label fra ground truth
+            
             tile_key = tile_file.split(".")[0]  # Dvs. fra "tile_0_0.jpg" til "tile_0_0"
             label = "Unknown"
             if board_name in ground_truth and tile_key in ground_truth[board_name]:
@@ -127,10 +133,14 @@ def process_all_tiles(
             rows.append(row)
 
     # Skrives alle rækker til CSV-filen på en gang
+    
     with open(
         output_csv, "w", newline=""
-    ) as f:  #  f variablen bruge  i stedet for at skrive hele filnavnet igen.
-        # det håndterer automatisk kommaer og anførselstegn korrekt.
+        
+    ) as f: 
+     #  f variablen bruge  i stedet for at skrive hele filnavnet igen
+     
+             # det håndterer automatisk kommaer og anførselstegn korrekt.
         writer = csv.writer(f)
 
         writer.writerow(header)  # Første linje = klonnenavne
@@ -140,7 +150,9 @@ def process_all_tiles(
 
 
 def draw_histogram(ax, hist, colors, title, labels):
-    """Tegner ét histogram med markering af den højeste søjle"""
+    """ 
+    Tegner et histogram med markering af den højeste søjle!
+    """
 
     # Tegn alle søjler
 
