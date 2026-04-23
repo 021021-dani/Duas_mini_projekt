@@ -69,23 +69,23 @@ class TileClssifier:
             self.svm_model.fit(X, y)
             self.is_fitted = True
         
-        def classify(self, cell_image: np.ndarray) -> str:
+    def classify(self, cell_image: np.ndarray) -> str:
             
-            """
-            Klassificerer en enkelt tile ved hjælp af scikit-learn SVM.
-            Returnerer en tekststreng med terrænets navn! 
-            """
+        """
+        Klassificerer en enkelt tile ved hjælp af scikit-learn SVM.
+        Returnerer en tekststreng med terrænets navn! 
+        """
             
-            if not self.is_fitted:
-                return "Unknown"
+        if not self.is_fitted:
+            return "Unknown"
             
-            # Udtræk 20 HSV features fra tilen
+        # Udtræk 20 HSV features fra tilen
             
-            features = extrac_hsv_histogram(cell_image)
-            features_2d = features.reshape(1, -1)
+        features = extrac_hsv_histogram(cell_image)
+        features_2d = features.reshape(1, -1)
             
-            prediction = self.svm_model.predict(features_2d)
-            return prediction[0]
+        prediction = self.svm_model.predict(features_2d)
+        return prediction[0]
         
         
 if __name__ == "__main__":

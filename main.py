@@ -1,20 +1,11 @@
 
-
 import cv2 as cv
 import pandas as pd
 import os
-
 from board_split import get_tiles
 from feature_extraction import extrac_hsv_histogram, process_all_tiles, visualize_tile_and_histogram
-# from merge_labels import merge_features_with_labels
-
 from scoring import compute_score_from_csv
 
-
-# df = pd.read_csv("PointScore_ground_truth.csv", sep=";")
-# print("LOADED FILE")
-# print(df.head())
-# print(df.columns)
 
 def main():
     
@@ -55,23 +46,23 @@ if __name__ == "__main__":
     )
         
         
-    # Vis histogram for nogle udvalgte tiles og deres histogram 
+    # Vis farve- histogram for nogle udvalgte tiles og deres histogram 
     
-    visualize_tile_and_histogram("KD_tiles/board_53/tile_1_2.jpg")
-    visualize_tile_and_histogram("KD_tiles/board_49/tile_1_2.jpg")
-    #visualize_tile_and_histogram("KD_tiles/board_22/tile_2_3.jpg")
-    #visualize_tile_and_histogram("KD_tiles/board_40/tile_3_1.jpg")
+    #visualize_tile_and_histogram("KD_tiles/board_53/tile_1_2.jpg")
+    # visualize_tile_and_histogram("KD_tiles/board_49/tile_1_2.jpg")
+    visualize_tile_and_histogram("KD_tiles/board_22/tile_2_3.jpg")
+    visualize_tile_and_histogram("KD_tiles/board_40/tile_3_1.jpg")
     
-
-
 
     # scoring.py
     
-    results = compute_score_from_csv("features.csv", "PointScore_ground_truth.csv")    
+    results = compute_score_from_csv("features_with_crowns.csv")    
     
     print("\n=== Board Scores ===")
     for board_name, score in results.items():
         print(f"{board_name}: {score}")
+        
+        
         
         
     
