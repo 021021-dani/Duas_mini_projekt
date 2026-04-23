@@ -68,8 +68,8 @@ if __name__ == "__main__":
     # scoring.py
     
     results = compute_score_from_csv("features.csv", "PointScore_ground_truth.csv")    
-    print("\n=== Board Scores ===")
     
+    print("\n=== Board Scores ===")
     for board_name, score in results.items():
         print(f"{board_name}: {score}")
         
