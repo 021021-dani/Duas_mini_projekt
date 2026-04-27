@@ -17,7 +17,7 @@ board_15;False;7;7;0
 board_16;False;6;6;0
 board_17;False;10;10;0
 board_18;False;6;6;0
-board_19;True;11;10;-1
+board_19;True;11;11;0
 board_20;False;11;11;0
 board_21;False;10;10;0
 board_22;False;6;6;0
@@ -36,7 +36,7 @@ board_34;False;10;10;0
 board_35;True;11;11;0
 board_36;False;9;9;0
 board_37;False;8;8;0
-board_38;False;10;12;2
+board_38;False;10;10;0
 board_39;True;11;11;0
 board_40;False;9;9;0
 board_41;False;11;11;0
@@ -65,8 +65,8 @@ board_63;False;9;9;0
 board_64;False;5;5;0
 board_65;False;8;8;0
 board_66;False;18;18;0
-board_67;True;8;7;-1
+board_67;True;8;8;0
 board_68;False;5;5;0
 board_69;False;18;18;0
-board_70;True;8;7;-1
+board_70;True;8;8;0
 board_72;False;8;8;0

@@ -142,6 +142,14 @@ class CrownDetector:
         templates_path = Path(templates_dir)
         if templates_path.exists():
             for f in sorted(templates_path.glob("*.npy")):
+                # Uddrag board-nummer fra filnavnet, f.eks. "template_001_board12_10_20.npy"
+                parts = f.name.split("_")
+                if len(parts) >= 3 and parts[2].startswith("board"):
+                    board_num = parts[2].replace("board", "")
+                    # Filtrér test-sættet (forhindrer datalækage)
+                    if f"board_{board_num}" in TEST_BOARDS:
+                        continue
+
                 t = np.load(f)
                 if t is not None:
                     self.templates.append(t.astype(np.float32))
@@ -190,6 +198,13 @@ if __name__ == "__main__":
     gt_df = pd.read_csv("PointScore_ground_truth.csv", sep=";")
     gt_dict = {row["board_name"]: row["total_crowns"] for _, row in gt_df.iterrows()}
 
+    # Læs tile-niveau GT kroner (facit) for hver brik
+    gt_crowns_df = pd.read_csv("GT_crowns_per_tile.csv", sep=";")
+    gt_crowns_dict = {
+        (row["Board"], row["Tile"]): int(row["GT_Crowns"])
+        for _, row in gt_crowns_df.iterrows()
+    }
+
     tiles_dir = Path("KD_tiles")
     if not tiles_dir.exists():
         print(f"Mappe '{tiles_dir}' ikke fundet.")
@@ -198,8 +213,8 @@ if __name__ == "__main__":
     # --- 1. Opsæt Grid Search ---
     # Vi tuner over de tre værdier på Threshold og Overlap-parametre
     param_grid = {
-        "threshold": [0.70],
-        "nms_overlap": [0.20],
+        "threshold": [0.73],
+        "nms_overlap": [0.35],
     }
 
     """Resultater:
@@ -212,9 +227,7 @@ if __name__ == "__main__":
 
     combinations = list(product(param_grid["threshold"], param_grid["nms_overlap"]))
 
-    print(
-        f"Tester {len(combinations)} parameter-kombinationer (med GridSearchCV)...\n"
-    )
+    print(f"Tester {len(combinations)} parameter-kombinationer (med GridSearchCV)\n")
 
     for thresh, overlap in combinations:
         detector = CrownDetector(
@@ -319,13 +332,18 @@ if __name__ == "__main__":
             # Bevar index så det matcher template_matching.py format, f.eks. "tile_2_3" fra "tile_2_3.jpg"
             tile_idx = Path(tile_file_name).stem
 
+            true_tile_crowns = gt_crowns_dict.get((board_name, tile_idx), "N/A")
+
             tile_results.append(
                 {
                     "Board": board_name,
                     "Tile": tile_idx,
                     "Is_Test_Set": is_test_board,
-                    "GT_Crowns": "N/A",  # Dette dataset (PointScore_ground_truth.csv) mangler labels på "tile"-niveau
+                    "GT_Crowns": true_tile_crowns,
                     "Detected_Crowns": crowns_found,
+                    "Error": (crowns_found - true_tile_crowns)
+                    if true_tile_crowns != "N/A"
+                    else "N/A",
                 }
             )
 

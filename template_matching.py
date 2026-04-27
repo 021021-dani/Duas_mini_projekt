@@ -99,7 +99,7 @@ class InteractiveTemplateMatcher:
 
         print(
             f"Indlæst {len(self.board_files)} spilleplader til annotation. "
-            f"\n(Hold-out/Testsættet ekskluderes automatisk for renhed: {sorted(TEST_BOARDS)})"
+            f"\n(Hold-out testsættet ekskluderes: {sorted(TEST_BOARDS)})"
         )
 
         # Tilstandsvariabler for brugergrænsefladen
@@ -113,11 +113,11 @@ class InteractiveTemplateMatcher:
         self.saved_boxes = set()
 
         # Titler på de to UI-vinduer
-        self.window_hsv = "HSV Arbejdsomraade (Træk firkant for at gemme Template)"
-        self.window_result = "Template matching Resultater"
+        self.window_hsv = "(HSV) only Hue, ignoring Saturation, ignoring Value"
+        self.window_result = "Crowns found with correlation score"
 
     def _get_board_number(self, path_str: str) -> int:
-        """Hjælpemetode, der trækker tallet ud af formater som 'board_12', så brættene kan sorteres numerisk."""
+        """Hjælpemetode, der trækker tallet ud af eksempelvis 'board_12', så spillebrættene kan sorteres numerisk."""
         for name in (Path(path_str).stem, Path(path_str).parent.name):
             try:
                 return int(name.replace("board_", ""))
@@ -126,7 +126,7 @@ class InteractiveTemplateMatcher:
         return 0
 
     def _find_boards(self) -> List[str]:
-        """Gennemgår filsystemet for alle trænings-tiles og returnerer en ordnet liste uden test-sættet."""
+        """Gennemgår filsystemet for alle trænings-tiles og returnerer en ordnet liste uden testsættet."""
         boards = []
         if self.board_dir.exists() and self.board_dir.is_dir():
             for i in self.board_dir.rglob("*.jpg"):
@@ -146,7 +146,7 @@ class InteractiveTemplateMatcher:
     def load_board(self, idx: int):
         """Henter pladens billede fra filstien og laver en kopi i HSV, som fremhæver de gule (gold) kronfarver uanset lyssætning."""
         self.board_orig = cv2.imread(self.board_files[idx])
-        # HSV (Hue, Saturation, Value) adskiller farvetone fra lysstyrke – helt essentielt til kongekroner!
+        # HSV (Hue, Saturation, Value) adskiller farvetone fra lysstyrke
         self.board_hsv = cv2.cvtColor(self.board_orig, cv2.COLOR_BGR2HSV)
 
     def draw_hsv(self):
@@ -189,12 +189,10 @@ class InteractiveTemplateMatcher:
 
         # Tegn hver bounding box fundet af algoritmen
         for x, y, w, h, score in self.found_boxes:
-            box_key = (x, y, w, h)
-            is_saved = box_key in self.saved_boxes
 
             # Gør farven unik, hvis kronen blev markeret (klikket på)
-            farve = (200, 100, 0) if is_saved else (0, 255, 0)
-            tekst = "GEMT" if is_saved else f"{score:.0%}"
+            farve = (0, 255, 0)
+            tekst = f"{score:.0%}"
 
             cv2.rectangle(
                 img=resultat, pt1=(x, y), pt2=(x + w, y + h), color=farve, thickness=2
@@ -214,7 +212,7 @@ class InteractiveTemplateMatcher:
         cv2.imshow(self.window_result, resultat)
 
     def run_matching(self):
-        """Selve hjertet af template matcheren. Trækker alle .npy-kroner henover brættet."""
+        """Selve hjertet af template matcheren. Trækker alle .npy-kroner hen over brættet."""
         self.found_boxes = []
 
         # Hent datasættet af numpy-skabeloner vi tidligere har udklippet
