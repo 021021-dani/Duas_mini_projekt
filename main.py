@@ -48,20 +48,22 @@ if __name__ == "__main__":
         
     # Vis farve- histogram for nogle udvalgte tiles og deres histogram 
     
-    #visualize_tile_and_histogram("KD_tiles/board_1/tile_0_0.jpg")
-    #visualize_tile_and_histogram("KD_tiles/board_49/tile_1_2.jpg")
-    visualize_tile_and_histogram("KD_tiles/board_6/tile_1_2.jpg")
-    visualize_tile_and_histogram("KD_tiles/board_46/tile_4_4.jpg")
+    #visualize_tile_and_histogram("KD_tiles/board_32/tile_0_1.jpg")
+    visualize_tile_and_histogram("KD_tiles/board_49/tile_1_2.jpg")
+    #visualize_tile_and_histogram("KD_tiles/board_6/tile_1_2.jpg")
+    #visualize_tile_and_histogram("KD_tiles/board_46/tile_4_4.jpg")
     
 
     # scoring.py
-    
-    #results = compute_score_from_csv("features_with_crowns.csv")    
-    
-    #print("\n=== Board Scores ===")
-    #for board_name, score in results.items():
-        #print(f"{board_name}: {score}")
-        
+     
+    results = compute_score_from_csv("features_with_crowns.csv")
+
+    print("\n=== Board Scores ===")
+    sorted_results = dict(
+    sorted(results.items(), key=lambda x: int(x[0].split("_")[1]))
+    )
+    for board_name, score in sorted_results.items():
+        print(f"{board_name}: {score}")
         
         
         

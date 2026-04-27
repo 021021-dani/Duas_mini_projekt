@@ -186,5 +186,8 @@ def compute_score_from_csv(csv_path):
         
         # Gemmer resultatet i dictionary
         scores[board_name] = score
-        
+       
+  
     return scores
+
+
