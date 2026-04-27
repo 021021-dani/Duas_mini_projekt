@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import GridSearchCV, PredefinedSplit, cross_val_score
 from sklearn.svm import SVC 
+
 from feature_extraction import extrac_hsv_histogram
 
 # Definer de spilleplader der sorteres fra til test-sættet
@@ -91,7 +92,7 @@ class TileClssifier:
 if __name__ == "__main__":
 
     # --- 1. Indlæs Dataset ---
-    csv_path = "features.csv"
+    csv_path = "features_with_crowns.csv"
     print(f"\nBehandler data fra {csv_path}...")
     df = pd.read_csv(csv_path)
 

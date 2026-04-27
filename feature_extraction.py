@@ -18,7 +18,7 @@ def extrac_hsv_histogram(tile):
     # Beregn histogram for hver kanal ([0] = kanal, None = ingen maske,
     # [10] = antal bins, [0,256] = værdiområde for HSV
 
-    h_hist = cv.calcHist([hsv], [0], None, [10], [0, 180])
+    h_hist = cv.calcHist([hsv], [0], None, [10], [0, 179])
     s_hist = cv.calcHist([hsv], [1], None, [5], [0, 256])
     v_hist = cv.calcHist([hsv], [2], None, [5], [0, 256])
 
@@ -69,7 +69,7 @@ def process_all_tiles(
     # Kolonner til CSV-filen (10 hue, 5 sat, 5 val)
 
     header = (
-        [f"hue_{i}" for i in range(10)]
+        [f"hue_{i}" for i in range(1)]
         + [f"sat_{i}" for i in range(5)]
         + [f"val_{i}" for i in range(5)]
         + ["label", "tile_file", "board_name"]
@@ -197,7 +197,7 @@ def visualize_tile_and_histogram(tile_path):
 
     # Beregn og normaliser histogrammerne
 
-    h_hist = cv.normalize(cv.calcHist([hsv], [0], None, [10], [0, 180]), None).flatten()
+    h_hist = cv.normalize(cv.calcHist([hsv], [0], None, [10], [0, 179]), None).flatten()    
     s_hist = cv.normalize(cv.calcHist([hsv], [1], None, [5], [0, 256]), None).flatten()
     v_hist = cv.normalize(cv.calcHist([hsv], [2], None, [5], [0, 256]), None).flatten()
 
@@ -247,9 +247,9 @@ def visualize_tile_and_histogram(tile_path):
 
     # Tegn de tre histogrammer med hjælpefunktionen
 
-    draw_histogram(axes[1], h_hist, hue_colors, "Hue (farvetone)", hue_labels)
-    draw_histogram(axes[2], s_hist, sat_colors, "Saturation (mætning)", sat_labels)
-    draw_histogram(axes[3], v_hist, val_colors, "Value (lysstyrke)", val_labels)
+    draw_histogram(axes[1], h_hist, hue_colors, "Hue",hue_labels)
+    draw_histogram(axes[2], s_hist, sat_colors, "Saturation", sat_labels)
+    draw_histogram(axes[3], v_hist, val_colors, "Value", val_labels)
 
     plt.tight_layout()
     plt.show()
