@@ -7,30 +7,23 @@ Inkluderer 5-Fold Cross-Validation for at optimere tærskelværdi (threshold) og
 
 import os
 from pathlib import Path
-from typing import List, Tuple
 
 import cv2
 import numpy as np
 import pandas as pd
 
+from create_templates import apply_nms
+
 # Definer de spilleplader, der sorteres fra til test-sættet (Hold-out sæt)
 TEST_BOARDS = {
-    "board_1",
-    "board_5",
-    "board_19",
-    "board_23",
-    "board_25",
-    "board_29",
-    "board_35",
-    "board_39",
-    "board_49",
-    "board_53",
-    "board_67",
+    "board_1", "board_19", "board_23", "board_25", "board_29",
+    "board_35", "board_39", "board_49", "board_53", "board_67", "board_67",
     "board_70",
 }
 
 # Opdel efter de 5 Fold-grupperinger til Cross-Validation
 FOLD_MAPPING = {
+    # Fold 0
     "board_4": 0,
     "board_8": 0,
     "board_20": 0,
@@ -43,6 +36,7 @@ FOLD_MAPPING = {
     "board_52": 0,
     "board_65": 0,
     "board_72": 0,
+    # Fold 1
     "board_2": 1,
     "board_6": 1,
     "board_18": 1,
@@ -55,6 +49,7 @@ FOLD_MAPPING = {
     "board_55": 1,
     "board_58": 1,
     "board_62": 1,
+    # Fold 2
     "board_10": 2,
     "board_14": 2,
     "board_11": 2,
@@ -67,6 +62,7 @@ FOLD_MAPPING = {
     "board_61": 2,
     "board_64": 2,
     "board_68": 2,
+    # Fold 3
     "board_3": 3,
     "board_7": 3,
     "board_17": 3,
@@ -79,6 +75,7 @@ FOLD_MAPPING = {
     "board_54": 3,
     "board_59": 3,
     "board_63": 3,
+    # Fold 4
     "board_9": 4,
     "board_13": 4,
     "board_12": 4,
@@ -91,41 +88,6 @@ FOLD_MAPPING = {
     "board_66": 4,
     "board_69": 4,
 }
-
-
-def apply_nms(
-    boxes: List[Tuple[int, int, int, int, float]], overlap_thresh: float
-) -> List[Tuple[int, int, int, int, float]]:
-    """
-    Non-Maximum Suppression (NMS).
-    Fjerner overlappende kasser (bounding boxes), så vi ikke tæller samme krone to gange.
-    """
-    if not boxes:
-        return []
-
-    # Sorter kasser ud fra deres match-score, så vi kigger på de bedste først
-    boxes = sorted(boxes, key=lambda b: b[4], reverse=True)
-    retained = []
-
-    for box in boxes:
-        x1, y1, w, h, _ = box
-        is_duplicate = False
-
-        # Sammenlign med de kasser, vi allerede har valgt at beholde
-        for bx, by, bw, bh, _ in retained:
-            # Udregn det overlappende rektangels dimensioner
-            ix = max(0, min(x1 + w, bx + bw) - max(x1, bx))
-            iy = max(0, min(y1 + h, by + bh) - max(y1, by))
-
-            # Hvis overlappet er større end tilladt, er det en kopi
-            if (ix * iy) / float(w * h) > overlap_thresh:
-                is_duplicate = True
-                break
-
-        if not is_duplicate:
-            retained.append(box)
-
-    return retained
 
 
 class CrownDetector:
@@ -367,3 +329,32 @@ if __name__ == "__main__":
 
     board_df.to_csv("evaluation_boards.csv", index=False, sep=";")
     tile_df.to_csv("evaluation_tiles.csv", index=False, sep=";")
+
+    # --- Print Evaluation Results (Merged from count_crowns.py) ---
+    # Presents training results:
+    training_set_df = tile_df[tile_df["Is_Test_Set"] == False]
+    training_GT_Crowns = pd.to_numeric(
+        training_set_df["GT_Crowns"], errors="coerce"
+    ).sum()
+    training_Detected_Crowns = pd.to_numeric(
+        training_set_df["Detected_Crowns"], errors="coerce"
+    ).sum()
+    training_Error = pd.to_numeric(training_set_df["Error"], errors="coerce").sum()
+
+    # print("\n--- Training Set Only ---")
+    # print(f"Training GT Crowns: {training_GT_Crowns}")
+    # print(f"Training Detected Crowns: {training_Detected_Crowns}")
+    # print(f"Training Error: {training_Error}")
+
+    # Presents test set results:
+    test_set_df = tile_df[tile_df["Is_Test_Set"] == True]
+    test_GT_Crowns = pd.to_numeric(test_set_df["GT_Crowns"], errors="coerce").sum()
+    test_Detected_Crowns = pd.to_numeric(
+        test_set_df["Detected_Crowns"], errors="coerce"
+    ).sum()
+    test_Error = pd.to_numeric(test_set_df["Error"], errors="coerce").sum()
+
+    print("\n--- Test Set Only ---")
+    print(f"Test GT Crowns: {test_GT_Crowns}")
+    print(f"Test Detected Crowns: {test_Detected_Crowns}")
+    print(f"Test Error: {test_Error}")
