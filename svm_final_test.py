@@ -13,7 +13,7 @@ TEST_BOARDS = {
     "board_49","board_53","board_67","board_70"
 }
 
-def test_svm_classifier(feature_csv="ground_truth_per_tile.csv"):
+def test_svm_classifier(feature_csv="predictions_per_tile.csv"):
 
     # -------------------------
     # 2. Load data
@@ -63,7 +63,6 @@ def test_svm_classifier(feature_csv="ground_truth_per_tile.csv"):
     print("\n=== Classification Report ===")
     print(classification_report(y_test, y_pred))
 
-    print("\n=== Confusion Matrix ===")
     cm = confusion_matrix(y_test, y_pred)
 
     # -------------------------

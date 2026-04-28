@@ -148,19 +148,18 @@ class CrownDetector:
         return min(len(retained_boxes), 3)
 
 
-if __name__ == "__main__":
+def run_template_matching():
     print("--- Hyperparameter Tuning: 5-Fold CV for CrownDetector ---")
 
-    # Læs den oprindelige CSV med pandas, for at få det totale antal kroner (facit) for hvert board
-    gt_df = pd.read_csv("PointScore_ground_truth.csv", sep=";")
-    gt_dict = {row["board_name"]: row["total_crowns"] for _, row in gt_df.iterrows()}
-
     # Læs tile-niveau GT kroner (facit) for hver brik
-    gt_crowns_df = pd.read_csv("GT_crowns_per_tile.csv", sep=";")
+    gt_crowns_df = pd.read_csv("predictions_per_tile.csv", sep=",")
     gt_crowns_dict = {
-        (row["Board"], row["Tile"]): int(row["GT_Crowns"])
+        (row["board_name"], row["tile_file"].replace(".jpg", "")): int(row["crowns"])
         for _, row in gt_crowns_df.iterrows()
     }
+
+    # Beregn det totale antal kroner for hvert board fra tile-data
+    gt_dict = gt_crowns_df.groupby("board_name")["crowns"].sum().to_dict()
 
     tiles_dir = Path("KD_tiles")
     if not tiles_dir.exists():
