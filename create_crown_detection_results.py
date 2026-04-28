@@ -23,7 +23,6 @@ TEST_BOARDS = {
 
 # Opdel efter de 5 Fold-grupperinger til Cross-Validation
 FOLD_MAPPING = {
-    # Fold 0
     "board_4": 0,
     "board_8": 0,
     "board_20": 0,
@@ -36,7 +35,6 @@ FOLD_MAPPING = {
     "board_52": 0,
     "board_65": 0,
     "board_72": 0,
-    # Fold 1
     "board_2": 1,
     "board_6": 1,
     "board_18": 1,
@@ -49,7 +47,6 @@ FOLD_MAPPING = {
     "board_55": 1,
     "board_58": 1,
     "board_62": 1,
-    # Fold 2
     "board_10": 2,
     "board_14": 2,
     "board_11": 2,
@@ -62,7 +59,6 @@ FOLD_MAPPING = {
     "board_61": 2,
     "board_64": 2,
     "board_68": 2,
-    # Fold 3
     "board_3": 3,
     "board_7": 3,
     "board_17": 3,
@@ -75,7 +71,6 @@ FOLD_MAPPING = {
     "board_54": 3,
     "board_59": 3,
     "board_63": 3,
-    # Fold 4
     "board_9": 4,
     "board_13": 4,
     "board_12": 4,
