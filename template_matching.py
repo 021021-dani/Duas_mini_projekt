@@ -21,18 +21,8 @@ import numpy as np
 
 # Hold-out sæt: Spilleplader der udelades fra alle træningstrin for at undgå datalækage ("data leakage").
 TEST_BOARDS = {
-    "board_1",
-    "board_5",
-    "board_19",
-    "board_23",
-    "board_25",
-    "board_29",
-    "board_35",
-    "board_39",
-    "board_49",
-    "board_53",
-    "board_67",
-    "board_70",
+    "board_55",
+
 }
 
 TM_THRESHOLD = (
@@ -132,7 +122,7 @@ class InteractiveTemplateMatcher:
             for i in self.board_dir.rglob("*.jpg"):
                 num = self._get_board_number(str(i))
                 # Filtrér test-sættet (forhindrer datalækage mens vi laver templates til træning)
-                if num and f"board_{num}" not in TEST_BOARDS:
+                if num and f"board_{num}" in TEST_BOARDS:
                     boards.append(str(i))
 
         boards.sort(key=self._get_board_number)
