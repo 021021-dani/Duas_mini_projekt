@@ -13,66 +13,67 @@ TEST_BOARDS = {
     "board_49","board_53","board_67","board_70"
 }
 
-# -------------------------
-# 2. Load data
-# -------------------------
-df = pd.read_csv("features_with_crowns.csv")
+def test_svm_classifier(feature_csv="ground_truth_per_tile.csv"):
 
-# -------------------------
-# 3. Split data
-# -------------------------
-train_df = df[~df["board_name"].isin(TEST_BOARDS)]
-test_df  = df[df["board_name"].isin(TEST_BOARDS)]
+    # -------------------------
+    # 2. Load data
+    # -------------------------
+    df = pd.read_csv(feature_csv)
 
-# -------------------------
-# 4. Features / labels
-# -------------------------
-X_train = train_df.drop(columns=["board_name","tile_file","label","crowns"])
-y_train = train_df["label"]
+    # -------------------------
+    # 3. Split data
+    # -------------------------
+    train_df = df[~df["board_name"].isin(TEST_BOARDS)]
+    test_df  = df[df["board_name"].isin(TEST_BOARDS)]
 
-X_test = test_df.drop(columns=["board_name","tile_file","label","crowns"])
-y_test = test_df["label"]
+    # -------------------------
+    # 4. Features / labels
+    # -------------------------
+    X_train = train_df.drop(columns=["board_name","tile_file","label","crowns"])
+    y_train = train_df["label"]
 
-# -------------------------
-# 5. Scaling
-# -------------------------
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test  = scaler.transform(X_test)
+    X_test = test_df.drop(columns=["board_name","tile_file","label","crowns"])
+    y_test = test_df["label"]
 
-# -------------------------
-# 6. Train final model
-# (med dine bedste parametre)
-# -------------------------
-model = SVC(kernel="rbf", C=10, gamma="scale")
-model.fit(X_train, y_train)
+    # -------------------------
+    # 5. Scaling
+    # -------------------------
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test  = scaler.transform(X_test)
 
-# -------------------------
-# 7. Predict
-# -------------------------
-y_pred = model.predict(X_test)
+    # -------------------------
+    # 6. Train final model
+    # (med dine bedste parametre)
+    # -------------------------
+    model = SVC(kernel="rbf", C=10, gamma="scale")
+    model.fit(X_train, y_train)
 
-# -------------------------
-# 8. Evaluation
-# -------------------------
-print("\n=== Test Accuracy ===")
-print(accuracy_score(y_test, y_pred))
+    # -------------------------
+    # 7. Predict
+    # -------------------------
+    y_pred = model.predict(X_test)
 
-print("\n=== Classification Report ===")
-print(classification_report(y_test, y_pred))
+    # -------------------------
+    # 8. Evaluation
+    # -------------------------
+    print("\n=== Test Accuracy ===")
+    print(accuracy_score(y_test, y_pred))
 
-print("\n=== Confusion Matrix ===")
-cm = confusion_matrix(y_test, y_pred)
-print(cm)
+    print("\n=== Classification Report ===")
+    print(classification_report(y_test, y_pred))
 
-# -------------------------
-# 9. Plot confusion matrix
-# -------------------------
+    print("\n=== Confusion Matrix ===")
+    cm = confusion_matrix(y_test, y_pred)
 
-labels = sorted(y_test.unique())  # dine terrain classes
+    # -------------------------
+    # 9. Plot confusion matrix
+    # -------------------------
 
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
-disp.plot(xticks_rotation=45)
+    labels = sorted(y_test.unique())  # dine terrain classes
 
-plt.title("Confusion Matrix - Final Test Set")
-plt.show()
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+    disp.plot(xticks_rotation=45)
+
+    plt.title("Confusion Matrix - Final Test Set")
+    plt.show()

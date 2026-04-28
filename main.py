@@ -11,17 +11,16 @@ import os
 # importer fra .py-moduler
 from board_split import get_tiles
 
-from feature_extraction import process_all_tiles, visualize_tile_and_histogram
+from feature_extraction import visualize_tile_and_histogram
 from bfs_algoritme import compute_score_from_csv
 # from create_crown_detection_result_csv import # kun oprettelse af csv_results
 from svm_final_test import test_svm_classifier
 
 
 
-
 def main():
     
-    dataset_folder = r"C:\Duas_mini_projekt\KD_tiles"
+    dataset_folder = "KD_tiles"
     
     print("\n====== Searching for images =======")
     
@@ -51,24 +50,18 @@ if __name__ == "__main__":
     
     # Gem alle features i CSV inkl. ground truth labels
     
-    process_all_tiles(
-        tiles_root_folder="KD_tiles",
-        output_csv="ground_truth_per_tile.csv",
-        ground_truth_csv="Labels_ground_truth.csv"
-    )
         
         
     # Vis farve- histogram for nogle udvalgte tiles og deres histogram 
     
-    #visualize_tile_and_histogram("KD_tiles/board_32/tile_0_1.jpg")
-    # visualize_tile_and_histogram("KD_tiles/board_49/tile_1_2.jpg")
-    #visualize_tile_and_histogram("KD_tiles/board_6/tile_1_2.jpg")
-    #visualize_tile_and_histogram("KD_tiles/board_46/tile_4_4.jpg")
+    visualize_tile_and_histogram("KD_tiles/board_53/tile_1_2.jpg")
+    visualize_tile_and_histogram("KD_tiles/board_29/tile_4_3.jpg")
+
     
 
     # bfs.py
      
-    results = compute_score_from_csv("features_with_crowns.csv")
+    results = compute_score_from_csv("ground_truth_per_tile.csv")
 
     print("\n=== Board Scores ===")
     sorted_results = dict(
@@ -76,7 +69,8 @@ if __name__ == "__main__":
     )
     for board_name, score in sorted_results.items():
         print(f"{board_name}: {score}")
-        
+    
+    test_svm_classifier()
         
         
     
