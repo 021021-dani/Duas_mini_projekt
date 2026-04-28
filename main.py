@@ -1,10 +1,22 @@
+"""
+King Domino Pipeline - Main Entry Point
+
+This script serves as the orchestration hub for the King Domino terrain classification
+and scoring pipeline. It imports and runs the SVM classifier evaluation.
+"""
 
 import cv2 as cv
-import pandas as pd
 import os
+
+# importer fra .py-moduler
 from board_split import get_tiles
-from feature_extraction import extrac_hsv_histogram, process_all_tiles, visualize_tile_and_histogram
-from scoring import compute_score_from_csv
+
+from feature_extraction import process_all_tiles, visualize_tile_and_histogram
+from bfs_algoritme import compute_score_from_csv
+# from create_crown_detection_result_csv import # kun oprettelse af csv_results
+from svm_final_test import test_svm_classifier
+
+
 
 
 def main():
@@ -41,7 +53,7 @@ if __name__ == "__main__":
     
     process_all_tiles(
         tiles_root_folder="KD_tiles",
-        output_csv="features.csv",
+        output_csv="ground_truth_per_tile.csv",
         ground_truth_csv="Labels_ground_truth.csv"
     )
         
@@ -49,12 +61,12 @@ if __name__ == "__main__":
     # Vis farve- histogram for nogle udvalgte tiles og deres histogram 
     
     #visualize_tile_and_histogram("KD_tiles/board_32/tile_0_1.jpg")
-    visualize_tile_and_histogram("KD_tiles/board_49/tile_1_2.jpg")
+    # visualize_tile_and_histogram("KD_tiles/board_49/tile_1_2.jpg")
     #visualize_tile_and_histogram("KD_tiles/board_6/tile_1_2.jpg")
     #visualize_tile_and_histogram("KD_tiles/board_46/tile_4_4.jpg")
     
 
-    # scoring.py
+    # bfs.py
      
     results = compute_score_from_csv("features_with_crowns.csv")
 
